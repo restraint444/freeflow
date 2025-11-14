@@ -50,7 +50,12 @@ struct DiveView: View {
                         .scaleEffect(1.0 - (CGFloat(index) * 0.05)) // Slight scale for depth
                         .offset(y: CGFloat(index * 8)) // Minimal offset for stacking
                         .zIndex(Double(activeNotifications.count - index)) // Newest has highest z-index (on top)
-                        .transition(.scale(scale: 0.8).combined(with: .opacity))
+                        .transition(
+                            .asymmetric(
+                                insertion: .scale(scale: 0.8).combined(with: .opacity),
+                                removal: .scale(scale: 1.3).combined(with: .opacity)
+                            )
+                        )
                     }
                 }
                 .padding(.bottom, 120) // Above flashlight/camera area
@@ -149,7 +154,10 @@ struct DiveView: View {
     }
 
     func dismissNotification(_ notification: NotificationItem) {
-        activeNotifications.removeAll { $0.id == notification.id }
+        // Pop animation: scale up briefly, then collapse
+        withAnimation(.spring(response: 0.3, dampingFraction: 0.6)) {
+            activeNotifications.removeAll { $0.id == notification.id }
+        }
 
         // Turn off screen light if no notifications
         if activeNotifications.isEmpty {
