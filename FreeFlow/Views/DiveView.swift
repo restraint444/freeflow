@@ -41,7 +41,7 @@ struct DiveView: View {
                             handleNotificationTap()
                         }
                     )
-                    .padding(.top, 5)
+                    .padding(.top, 3)
 
                     Spacer()
                 }
@@ -65,9 +65,8 @@ struct DiveView: View {
     }
 
     func scheduleNextNotification() {
-        let randomDelay = Double.random(in: 3...8)  // Random 3-8 seconds
-
-        notificationTimer = Timer.scheduledTimer(withTimeInterval: randomDelay, repeats: false) { _ in
+        // Fixed 3 second interval for testing animation
+        notificationTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
             if !isPaused && sessionActive {
                 spawnNotification()
             }
