@@ -1,255 +1,338 @@
 //
 //  DiveView.swift
-//  FreeFlow
+//  FreeFlow - Hungary's Deep Dive Game
 //
-//  The core underwater dive experience
-//  Week 1 MVP: Black screen + bubbles + depth meter
+//  Pure black screen, 25m descent, clam collection
 //
 
 import SwiftUI
 
 struct DiveView: View {
-    @StateObject private var spawner = BubbleSpawner()
-    @State private var currentDepth: Float = 0.0
-    @State private var maxDepthReached: Float = 0.0
-    @State private var bubblesTapped: Int = 0
-    @State private var shakeOffset: CGFloat = 0
-    @State private var sessionCompleted: Bool = false
-    @State private var sessionDuration: TimeInterval = 0
+    // GAME STATE
+    @State private var depthRemaining: Int = 25  // 25m → 0m
+    @State private var bubblesRemaining: Int = 5  // 5 lives
+    @State private var clamsCollected: Int = 0
+    @State private var timeInFlow: TimeInterval = 0
+    @State private var bubblesIgnored: Int = 0
 
-    // DEPTH PENALTY SYSTEM
-    private let depthPenalty: Float = 5.0  // meters lost per tap
-    private let maxDepth: Float = 40.0     // 40-minute session = 40 meters (v1 locked spec)
-    private let sessionTargetDuration: TimeInterval = 2400.0 // 40 minutes (v1 locked spec)
+    // NOTIFICATION SYSTEM
+    @State private var showNotification: Bool = false
+    @State private var notificationText: String = ""
+    @State private var screenLit: Bool = false
+
+    // SESSION STATE
+    @State private var sessionActive: Bool = true
+    @State private var isPaused: Bool = false
+    @State private var sessionComplete: Bool = false
+
+    // HUNGARY MASCOT
+    @State private var hungaryMessage: String = "Welcome! I'm Hungary the Walrus. Let's find some clams!"
+    @State private var showHungary: Bool = true
+
+    // TIMERS
+    @State private var gameTimer: Timer? = nil
+    @State private var notificationTimer: Timer? = nil
 
     var body: some View {
         ZStack {
-            if sessionCompleted {
-                // COMPLETION SCREEN
+            // PURE BLACK BACKGROUND
+            Color.black
+                .ignoresSafeArea()
+
+            // SCREEN LIGHTING (only when notification appears)
+            if screenLit {
+                Color.white
+                    .opacity(0.03)
+                    .ignoresSafeArea()
+                    .animation(.easeInOut(duration: 0.3), value: screenLit)
+            }
+
+            // GAME COMPLETE SCREEN
+            if sessionComplete {
                 CompletionView(
-                    maxDepth: maxDepthReached,
-                    bubblesTapped: bubblesTapped,
-                    sessionDuration: sessionDuration
+                    timeInFlow: timeInFlow,
+                    bubblesIgnored: bubblesIgnored,
+                    clamsCollected: clamsCollected,
+                    depthReached: 25 - depthRemaining
                 )
             } else {
                 // ACTIVE DIVE SESSION
-                ZStack {
-                    // PURE BLACK SCREEN (v1 locked spec)
-                    Color.black
-                        .ignoresSafeArea()
-
-                    // DEPTH METER (top-right, where battery icon usually is)
-                    VStack {
-                        HStack {
-                            Spacer()
-                            Text(String(format: "%.0fm ↓", currentDepth))
-                                .font(.system(size: 14, weight: .medium, design: .rounded))
-                                .foregroundColor(.white.opacity(0.7))
-                                .padding(.trailing, 20)
-                                .padding(.top, 10)
+                VStack {
+                    // TOP HUD
+                    HStack {
+                        // LEFT: Bubbles Remaining
+                        HStack(spacing: 4) {
+                            ForEach(0..<bubblesRemaining, id: \.self) { _ in
+                                Circle()
+                                    .fill(Color.white)
+                                    .frame(width: 12, height: 12)
+                            }
+                            ForEach(0..<(5 - bubblesRemaining), id: \.self) { _ in
+                                Circle()
+                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                    .frame(width: 12, height: 12)
+                            }
                         }
+                        .padding(.leading, 20)
+
                         Spacer()
+
+                        // RIGHT: Depth Remaining
+                        Text("\(depthRemaining)m")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.trailing, 20)
+                    }
+                    .padding(.top, 10)
+
+                    Spacer()
+
+                    // HUNGARY MASCOT MESSAGE (tutorial)
+                    if showHungary {
+                        Text(hungaryMessage)
+                            .font(.system(size: 16, weight: .medium))
+                            .foregroundColor(.white.opacity(0.8))
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 40)
+                            .padding(.vertical, 20)
+                            .background(
+                                RoundedRectangle(cornerRadius: 16)
+                                    .fill(Color.white.opacity(0.05))
+                            )
+                            .padding(.horizontal, 30)
                     }
 
-                    // BUBBLES (momentarily light up the screen)
-                    ForEach(spawner.activeBubbles) { bubble in
-                        BubbleView(bubble: bubble)
-                            .position(x: bubble.x, y: bubble.y)
-                            .onTapGesture {
-                                handleBubbleTap(bubble)
-                            }
-                    }
+                    Spacer()
 
-                    // TIME/DEPTH TRACKING (invisible, just updates depth meter)
-                    TimelineView(.periodic(from: .now, by: 1.0)) { _ in
-                        Color.clear
-                            .onAppear {
-                                updateDepth()
+                    // PAUSE BUTTON (camera icon aesthetic)
+                    if !isPaused {
+                        Button(action: pauseSession) {
+                            Image(systemName: "camera.fill")
+                                .font(.system(size: 24))
+                                .foregroundColor(.white.opacity(0.3))
+                                .padding()
+                        }
+                        .padding(.bottom, 40)
+                    } else {
+                        VStack(spacing: 20) {
+                            Text("PAUSED")
+                                .font(.system(size: 24, weight: .bold))
+                                .foregroundColor(.white)
+
+                            Button(action: resumeSession) {
+                                Text("Resume Dive")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.black)
+                                    .padding()
+                                    .background(Color.white)
+                                    .cornerRadius(12)
                             }
+
+                            Text("Exit will reset progress")
+                                .font(.system(size: 12))
+                                .foregroundColor(.white.opacity(0.5))
+                        }
+                        .padding(.bottom, 40)
                     }
                 }
-                .offset(x: shakeOffset)
+
+                // NOTIFICATION BANNER (slides down from top)
+                if showNotification {
+                    VStack {
+                        NotificationBanner(
+                            text: notificationText,
+                            onTap: {
+                                handleNotificationTap()
+                            }
+                        )
+                        .padding(.top, 50)
+
+                        Spacer()
+                    }
+                    .transition(.move(edge: .top))
+                    .animation(.easeOut(duration: 0.3), value: showNotification)
+                }
             }
         }
         .onAppear {
-            spawner.startSession()
+            startDiveSession()
         }
         .onDisappear {
-            spawner.stopSession()
+            stopSession()
         }
     }
 
-    private func updateDepth() {
-        let elapsed = spawner.getElapsedTime()
-        sessionDuration = elapsed
+    // MARK: - Game Logic
 
-        // Check if session is complete
-        if elapsed >= sessionTargetDuration && !sessionCompleted {
-            sessionCompleted = true
-            spawner.stopSession()
-            return
-        }
+    func startDiveSession() {
+        sessionActive = true
 
-        // Natural descent: 1m per minute (25 min session = 25m depth)
-        let naturalDepth = Float(elapsed / 60.0)
+        // Main game timer (1 meter per second descent)
+        gameTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
+            if !isPaused && sessionActive {
+                timeInFlow += 1
 
-        // Depth increases naturally but is clamped by penalties
-        // Only increase if natural depth > current (accounts for taps surfacing you)
-        if naturalDepth > currentDepth {
-            currentDepth = min(naturalDepth, maxDepth)
-        }
-
-        // Track max depth reached
-        if currentDepth > maxDepthReached {
-            maxDepthReached = currentDepth
-        }
-    }
-
-    private func handleBubbleTap(_ bubble: Bubble) {
-        spawner.tapBubble(bubble)
-        bubblesTapped += 1
-
-        // DEPTH PENALTY: -5m per tap
-        currentDepth = max(0, currentDepth - depthPenalty)
-
-        // Visual feedback: screen shake
-        withAnimation(.easeInOut(duration: 0.1)) {
-            shakeOffset = -10
-        }
-        withAnimation(.easeInOut(duration: 0.1).delay(0.1)) {
-            shakeOffset = 10
-        }
-        withAnimation(.easeInOut(duration: 0.1).delay(0.2)) {
-            shakeOffset = 0
-        }
-    }
-
-}
-
-struct BubbleView: View {
-    let bubble: Bubble
-
-    var body: some View {
-        Circle()
-            .fill(
-                RadialGradient(
-                    colors: [
-                        Color.cyan.opacity(0.6),
-                        Color.cyan.opacity(0.3),
-                        Color.clear
-                    ],
-                    center: .center,
-                    startRadius: 5,
-                    endRadius: 30
-                )
-            )
-            .frame(width: 60, height: 60)
-            .shadow(color: .cyan.opacity(0.5), radius: 20)
-            // Bubble lights up the screen (glow effect)
-    }
-}
-
-struct CompletionView: View {
-    let maxDepth: Float
-    let bubblesTapped: Int
-    let sessionDuration: TimeInterval
-
-    var body: some View {
-        ZStack {
-            // Background color based on achievement
-            completionColor()
-                .ignoresSafeArea()
-
-            VStack(spacing: 30) {
-                Spacer()
-
-                // COMPLETION TIER
-                VStack(spacing: 10) {
-                    Text(completionTier())
-                        .font(.system(size: 48, weight: .bold, design: .rounded))
-                        .foregroundColor(.white)
-
-                    Text(tierMessage())
-                        .font(.system(size: 18, weight: .medium))
-                        .foregroundColor(.white.opacity(0.8))
-                        .multilineTextAlignment(.center)
+                // Descend 1 meter per second
+                if depthRemaining > 0 {
+                    depthRemaining -= 1
                 }
 
-                // STATS
-                VStack(spacing: 20) {
-                    StatRow(label: "Max Depth", value: String(format: "%.0fm", maxDepth), color: .cyan)
-                    StatRow(label: "Time in Flow", value: flowTime(), color: .blue)
-                    StatRow(label: "Bubbles Tapped", value: "\(bubblesTapped)", color: bubblesTapped == 0 ? .green : .orange)
-                    StatRow(label: "Real Time", value: formatTime(sessionDuration), color: .white.opacity(0.6))
+                // Session complete when reaching 0m
+                if depthRemaining == 0 {
+                    completeSession()
                 }
-                .padding(.horizontal, 40)
+            }
+        }
 
-                Spacer()
+        // Notification spawner (random intervals)
+        scheduleNextNotification()
+    }
 
-                // COMPLETION MESSAGE
-                Text("Session Complete")
-                    .font(.system(size: 16, weight: .semibold))
-                    .foregroundColor(.white.opacity(0.5))
-                    .padding(.bottom, 40)
+    func scheduleNextNotification() {
+        let randomDelay = Double.random(in: 3...8)  // Random 3-8 seconds
+
+        notificationTimer = Timer.scheduledTimer(withTimeInterval: randomDelay, repeats: false) { _ in
+            if !isPaused && sessionActive && !sessionComplete {
+                spawnNotification()
             }
         }
     }
 
-    private func completionTier() -> String {
-        switch maxDepth {
-        case 0..<10:
-            return "Surface"
-        case 10..<20:
-            return "Shallow"
-        case 20..<25:
-            return "Deep"
-        case 25...:
-            return "The Abyss"
-        default:
-            return "Surface"
+    func spawnNotification() {
+        // Light up screen
+        screenLit = true
+
+        // Show banner
+        notificationText = generateFakeNotificationText()
+        showNotification = true
+
+        // Auto-dismiss after 6 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 6.0) {
+            dismissNotification()
+
+            // Schedule next notification
+            scheduleNextNotification()
         }
     }
 
-    private func tierMessage() -> String {
-        switch maxDepth {
-        case 0..<10:
-            return "You stayed near the surface.\nNext time, dive deeper."
-        case 10..<20:
-            return "Good dive.\nThe deep awaits."
-        case 20..<25:
-            return "Impressive depth control.\nAlmost to the abyss."
-        case 25...:
-            return "Perfect dive.\nYou reached the abyss."
-        default:
-            return ""
+    func generateFakeNotificationText() -> String {
+        let templates = [
+            "Instagram: Someone liked your photo",
+            "Messages: Hey, are you free?",
+            "Twitter: New notification",
+            "Reddit: Trending in your feed",
+            "Discord: 3 new messages"
+        ]
+        return templates.randomElement() ?? "Notification"
+    }
+
+    func handleNotificationTap() {
+        // Lose one bubble
+        if bubblesRemaining > 0 {
+            bubblesRemaining -= 1
+        }
+
+        // Check if game over (all bubbles used)
+        if bubblesRemaining == 0 {
+            hungaryMessage = "Out of bubbles! Returning to surface..."
+            showHungary = true
+
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                completeSession()
+            }
+        }
+
+        dismissNotification()
+    }
+
+    func dismissNotification() {
+        showNotification = false
+        screenLit = false
+        bubblesIgnored += 1  // Count as ignored if auto-dismissed
+    }
+
+    func pauseSession() {
+        isPaused = true
+        gameTimer?.invalidate()
+        notificationTimer?.invalidate()
+    }
+
+    func resumeSession() {
+        isPaused = false
+        startDiveSession()
+    }
+
+    func completeSession() {
+        sessionActive = false
+        sessionComplete = true
+        gameTimer?.invalidate()
+        notificationTimer?.invalidate()
+    }
+
+    func stopSession() {
+        gameTimer?.invalidate()
+        notificationTimer?.invalidate()
+    }
+}
+
+// MARK: - Notification Banner View
+struct NotificationBanner: View {
+    let text: String
+    let onTap: () -> Void
+
+    var body: some View {
+        Button(action: onTap) {
+            HStack {
+                Image(systemName: "app.fill")
+                    .foregroundColor(.white)
+                    .frame(width: 30, height: 30)
+
+                Text(text)
+                    .font(.system(size: 14))
+                    .foregroundColor(.white)
+                    .lineLimit(2)
+
+                Spacer()
+            }
+            .padding()
+            .background(
+                RoundedRectangle(cornerRadius: 16)
+                    .fill(Color.gray.opacity(0.9))
+                    .shadow(color: .white.opacity(0.3), radius: 10)
+            )
+            .padding(.horizontal, 20)
+        }
+    }
+}
+
+// MARK: - Completion Screen
+struct CompletionView: View {
+    let timeInFlow: TimeInterval
+    let bubblesIgnored: Int
+    let clamsCollected: Int
+    let depthReached: Int
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+
+            VStack(spacing: 30) {
+                Text("DIVE COMPLETE")
+                    .font(.system(size: 32, weight: .bold, design: .rounded))
+                    .foregroundColor(.white)
+
+                VStack(spacing: 20) {
+                    StatRow(label: "Time in Flow", value: formatTime(timeInFlow))
+                    StatRow(label: "Bubbles Ignored", value: "\(bubblesIgnored)")
+                    StatRow(label: "Clams Collected", value: "\(clamsCollected)")
+                    StatRow(label: "Depth Reached", value: "\(depthReached)m")
+                }
+                .padding(.horizontal, 40)
+            }
         }
     }
 
-    private func completionColor() -> Color {
-        // Background color reflects achievement
-        switch maxDepth {
-        case 0..<10:
-            return Color(red: 0.25, green: 0.88, blue: 0.82) // Turquoise (surface)
-        case 10..<20:
-            return Color(red: 0, green: 0.28, blue: 0.67) // Deep blue
-        case 20..<25:
-            return Color(red: 0, green: 0, blue: 0.5) // Navy
-        case 25...:
-            return Color.black // Abyss
-        default:
-            return Color.black
-        }
-    }
-
-    private func flowTime() -> String {
-        // Flow time = depth multiplier × real time
-        // Deeper you go, more "flow time" you accumulated
-        let multiplier = maxDepth / 25.0 // 0-1 range
-        let flowSeconds = sessionDuration * Double(multiplier)
-        return formatTime(flowSeconds)
-    }
-
-    private func formatTime(_ seconds: TimeInterval) -> String {
+    func formatTime(_ seconds: TimeInterval) -> String {
         let minutes = Int(seconds) / 60
         let secs = Int(seconds) % 60
         return String(format: "%d:%02d", minutes, secs)
@@ -259,7 +342,6 @@ struct CompletionView: View {
 struct StatRow: View {
     let label: String
     let value: String
-    let color: Color
 
     var body: some View {
         HStack {
@@ -269,7 +351,7 @@ struct StatRow: View {
             Spacer()
             Text(value)
                 .font(.system(size: 20, weight: .bold, design: .rounded))
-                .foregroundColor(color)
+                .foregroundColor(.white)
         }
     }
 }
