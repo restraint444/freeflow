@@ -33,7 +33,7 @@ struct DiveView: View {
                     .animation(.easeInOut(duration: 0.3), value: screenLit)
             }
 
-            // NOTIFICATION BANNER (below status bar, 1:1 iOS animation)
+            // NOTIFICATION BANNER - SLIDES DOWN FROM TOP EXACTLY LIKE iOS
             if showNotification {
                 VStack(spacing: 0) {
                     NotificationBanner(
@@ -41,12 +41,11 @@ struct DiveView: View {
                             handleNotificationTap()
                         }
                     )
-                    .padding(.top, 3)
 
                     Spacer()
                 }
-                .transition(.move(edge: .top).combined(with: .opacity))
-                .animation(.spring(response: 0.4, dampingFraction: 0.75, blendDuration: 0), value: showNotification)
+                .transition(.move(edge: .top))
+                .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0), value: showNotification)
             }
         }
         .onAppear {
@@ -109,16 +108,14 @@ struct NotificationBanner: View {
 
     var body: some View {
         Button(action: onTap) {
-            // Empty banner - pure white, sized like real iOS notification
-            VStack(spacing: 0) {
-                Rectangle()
-                    .fill(Color.white)
-                    .frame(height: 90)
-            }
-            .cornerRadius(20)
-            .shadow(color: .black.opacity(0.3), radius: 15)
-            .padding(.horizontal, 8)
-            .padding(.top, 8)
+            // Empty banner - pure white, slides from top like real iOS
+            Rectangle()
+                .fill(Color.white)
+                .frame(height: 90)
+                .cornerRadius(20)
+                .shadow(color: .black.opacity(0.3), radius: 15)
+                .padding(.horizontal, 8)
+                .padding(.top, 50)
         }
     }
 }
