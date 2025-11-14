@@ -1,0 +1,224 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		FreeFlowApp001 /* FreeFlowApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = FreeFlowAppRef /* FreeFlowApp.swift */; };
+		ContentView001 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ContentViewRef /* ContentView.swift */; };
+		DiveView001 /* DiveView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DiveViewRef /* DiveView.swift */; };
+		OnboardingView001 /* OnboardingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = OnboardingViewRef /* OnboardingView.swift */; };
+		Bubble001 /* Bubble.swift in Sources */ = {isa = PBXBuildFile; fileRef = BubbleRef /* Bubble.swift */; };
+		BubbleSpawner001 /* BubbleSpawner.swift in Sources */ = {isa = PBXBuildFile; fileRef = BubbleSpawnerRef /* BubbleSpawner.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		FreeFlowAppRef /* FreeFlowApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FreeFlowApp.swift; sourceTree = "<group>"; };
+		ContentViewRef /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
+		DiveViewRef /* DiveView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DiveView.swift; sourceTree = "<group>"; };
+		OnboardingViewRef /* OnboardingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OnboardingView.swift; sourceTree = "<group>"; };
+		BubbleRef /* Bubble.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Bubble.swift; sourceTree = "<group>"; };
+		BubbleSpawnerRef /* BubbleSpawner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BubbleSpawner.swift; sourceTree = "<group>"; };
+		FreeFlowProduct /* FreeFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FreeFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXGroup section */
+		MainGroup = {
+			isa = PBXGroup;
+			children = (
+				FreeFlowFolder /* FreeFlow */,
+				ProductsGroup /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		FreeFlowFolder /* FreeFlow */ = {
+			isa = PBXGroup;
+			children = (
+				FreeFlowAppRef /* FreeFlowApp.swift */,
+				ContentViewRef /* ContentView.swift */,
+				ViewsFolder /* Views */,
+				ModelsFolder /* Models */,
+			);
+			path = FreeFlow;
+			sourceTree = "<group>";
+		};
+		ViewsFolder /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				DiveViewRef /* DiveView.swift */,
+				OnboardingViewRef /* OnboardingView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		ModelsFolder /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				BubbleRef /* Bubble.swift */,
+				BubbleSpawnerRef /* BubbleSpawner.swift */,
+			);
+			path = Models;
+			sourceTree = "<group>";
+		};
+		ProductsGroup /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				FreeFlowProduct /* FreeFlow.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		FreeFlowTarget /* FreeFlow */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FreeFlowBuildConfigList /* Build configuration list for PBXNativeTarget "FreeFlow" */;
+			buildPhases = (
+				FreeFlowSourcesBuildPhase /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FreeFlow;
+			productName = FreeFlow;
+			productReference = FreeFlowProduct /* FreeFlow.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		MainProject /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+			};
+			buildConfigurationList = MainProjectBuildConfigList /* Build configuration list for PBXProject "FreeFlow" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = MainGroup;
+			productRefGroup = ProductsGroup /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				FreeFlowTarget /* FreeFlow */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		FreeFlowSourcesBuildPhase /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FreeFlowApp001 /* FreeFlowApp.swift in Sources */,
+				ContentView001 /* ContentView.swift in Sources */,
+				DiveView001 /* DiveView.swift in Sources */,
+				OnboardingView001 /* OnboardingView.swift in Sources */,
+				Bubble001 /* Bubble.swift in Sources */,
+				BubbleSpawner001 /* BubbleSpawner.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		DebugConfig /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CODE_SIGN_STYLE = Automatic;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		DebugAppConfig /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations = UIInterfaceOrientationPortrait;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.freeflow.app;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		MainProjectBuildConfigList /* Build configuration list for PBXProject "FreeFlow" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DebugConfig /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FreeFlowBuildConfigList /* Build configuration list for PBXNativeTarget "FreeFlow" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DebugAppConfig /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = MainProject /* Project object */;
+}
