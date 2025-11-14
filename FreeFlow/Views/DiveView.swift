@@ -1,20 +1,19 @@
 //
 //  DiveView.swift
-//  FreeFlow - Hungary's Deep Dive Game
+//  FreeFlow
 //
-//  Pure black screen, 25m descent, clam collection
+//  Lock screen notification demo - stacking bubbles
 //
 
 import SwiftUI
 
 struct DiveView: View {
-    // NOTIFICATION SYSTEM
-    @State private var showNotification: Bool = false
+    // NOTIFICATION SYSTEM - Lock screen style with stacking
+    @State private var activeNotifications: [NotificationItem] = []
     @State private var screenLit: Bool = false
 
     // SESSION STATE
     @State private var sessionActive: Bool = true
-    @State private var isPaused: Bool = false
 
     // TIMER
     @State private var notificationTimer: Timer? = nil
@@ -33,21 +32,24 @@ struct DiveView: View {
                     .animation(.easeInOut(duration: 0.3), value: screenLit)
             }
 
-            // NOTIFICATION BANNER - SLIDES DOWN FROM TOP EXACTLY LIKE iOS
-            VStack(spacing: 0) {
-                if showNotification {
-                    NotificationBanner(
+            // LOCK SCREEN NOTIFICATIONS - Bottom area, stacked
+            VStack {
+                Spacer()
+
+                // Stack notifications from bottom up
+                ForEach(Array(activeNotifications.enumerated()), id: \.element.id) { index, notification in
+                    LockScreenNotification(
                         onTap: {
-                            handleNotificationTap()
+                            dismissNotification(notification)
                         }
                     )
-                    .transition(.move(edge: .top))
+                    .offset(y: CGFloat(-index * 10)) // Stack offset
+                    .zIndex(Double(activeNotifications.count - index))
+                    .transition(.scale.combined(with: .opacity))
                 }
-
-                Spacer()
+                .padding(.bottom, 120) // Above flashlight/camera area
             }
-            .ignoresSafeArea()
-            .animation(.spring(response: 0.5, dampingFraction: 0.8), value: showNotification)
+            .animation(.spring(response: 0.4, dampingFraction: 0.75), value: activeNotifications.count)
         }
         .onAppear {
             startNotificationDemo()
@@ -65,9 +67,9 @@ struct DiveView: View {
     }
 
     func scheduleNextNotification() {
-        // Fixed 3 second interval for testing animation
+        // Fixed 3 second interval for testing
         notificationTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
-            if !isPaused && sessionActive {
+            if sessionActive {
                 spawnNotification()
             }
         }
@@ -77,25 +79,26 @@ struct DiveView: View {
         // Light up screen
         screenLit = true
 
-        // Show banner with smooth iOS animation
-        showNotification = true
+        // Add notification to stack
+        let notification = NotificationItem()
+        activeNotifications.append(notification)
 
         // Auto-dismiss after exactly 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-            dismissNotification()
+            dismissNotification(notification)
 
             // Schedule next notification
             scheduleNextNotification()
         }
     }
 
-    func handleNotificationTap() {
-        dismissNotification()
-    }
+    func dismissNotification(_ notification: NotificationItem) {
+        activeNotifications.removeAll { $0.id == notification.id }
 
-    func dismissNotification() {
-        showNotification = false
-        screenLit = false
+        // Turn off screen light if no notifications
+        if activeNotifications.isEmpty {
+            screenLit = false
+        }
     }
 
     func stopSession() {
@@ -103,20 +106,25 @@ struct DiveView: View {
     }
 }
 
-// MARK: - Notification Banner View
-struct NotificationBanner: View {
+// MARK: - Notification Model
+struct NotificationItem: Identifiable {
+    let id = UUID()
+    let createdAt = Date()
+}
+
+// MARK: - Lock Screen Notification View
+struct LockScreenNotification: View {
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            // Empty banner - pure white, positioned right below status bar
+            // Lock screen notification style - pure white rounded rect
             Rectangle()
                 .fill(Color.white)
-                .frame(height: 90)
-                .cornerRadius(20)
-                .shadow(color: .black.opacity(0.3), radius: 15)
-                .padding(.horizontal, 8)
-                .padding(.top, 54)
+                .frame(height: 80)
+                .frame(maxWidth: 360)
+                .cornerRadius(16)
+                .shadow(color: .black.opacity(0.3), radius: 10)
         }
     }
 }
