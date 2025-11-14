@@ -95,39 +95,39 @@ struct DiveView: View {
                 // TOP HUD - IN STATUS BAR AREA (overlaps time/battery)
                 VStack {
                     HStack {
-                        // LEFT: Bubbles Remaining (in status bar)
-                        HStack(spacing: 6) {
+                        // LEFT: Bubbles Remaining (centered above time, 70% smaller)
+                        HStack(spacing: 3) {
                             ForEach(0..<bubblesRemaining, id: \.self) { _ in
                                 Circle()
                                     .fill(
                                         RadialGradient(
                                             gradient: Gradient(colors: [.white, .white.opacity(0.6)]),
                                             center: .topLeading,
-                                            startRadius: 1,
-                                            endRadius: 10
+                                            startRadius: 0.5,
+                                            endRadius: 3
                                         )
                                     )
-                                    .frame(width: 16, height: 16)
+                                    .frame(width: 5, height: 5)
                                     .overlay(
                                         Circle()
-                                            .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+                                            .stroke(Color.white.opacity(0.4), lineWidth: 0.3)
                                     )
                             }
                             ForEach(0..<(5 - bubblesRemaining), id: \.self) { _ in
                                 Circle()
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                    .frame(width: 16, height: 16)
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                                    .frame(width: 5, height: 5)
                             }
                         }
-                        .padding(.leading, 20)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 60)
 
-                        Spacer()
-
-                        // RIGHT: Depth Remaining (in status bar)
+                        // RIGHT: Depth Remaining (centered above battery/wifi)
                         Text("\(depthRemaining)m")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .font(.system(size: 10, weight: .medium, design: .rounded))
                             .foregroundColor(.white.opacity(0.7))
-                            .padding(.trailing, 20)
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                            .padding(.trailing, 60)
                     }
                     .padding(.top, 8)
 
@@ -273,10 +273,10 @@ struct NotificationBanner: View {
 
     var body: some View {
         Button(action: onTap) {
-            // Empty banner - sized like real iOS notification, no text/icons
+            // Empty banner - pure white, sized like real iOS notification
             VStack(spacing: 0) {
                 Rectangle()
-                    .fill(Color.gray.opacity(0.95))
+                    .fill(Color.white)
                     .frame(height: 90)
             }
             .cornerRadius(20)
