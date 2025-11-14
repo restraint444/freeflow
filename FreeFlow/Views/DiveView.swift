@@ -34,20 +34,20 @@ struct DiveView: View {
             }
 
             // NOTIFICATION BANNER - SLIDES DOWN FROM TOP EXACTLY LIKE iOS
-            if showNotification {
-                VStack(spacing: 0) {
+            VStack(spacing: 0) {
+                if showNotification {
                     NotificationBanner(
                         onTap: {
                             handleNotificationTap()
                         }
                     )
-
-                    Spacer()
+                    .transition(.move(edge: .top))
                 }
-                .ignoresSafeArea()
-                .transition(.move(edge: .top))
-                .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0), value: showNotification)
+
+                Spacer()
             }
+            .ignoresSafeArea()
+            .animation(.spring(response: 0.5, dampingFraction: 0.8), value: showNotification)
         }
         .onAppear {
             startNotificationDemo()
