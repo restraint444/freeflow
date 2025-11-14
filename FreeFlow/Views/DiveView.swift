@@ -129,20 +129,17 @@ struct DiveView: View {
         // Light up screen
         screenLit = true
 
-        // Add notification to stack (starts grey)
-        var notification = NotificationItem()
-        activeNotifications.append(notification)
-
-        // Animate grey to blue after 0.3 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if let index = activeNotifications.firstIndex(where: { $0.id == notification.id }) {
-                activeNotifications[index].isNew = false
-            }
+        // Add notification - single unified animation (iOS style)
+        withAnimation(.spring(response: 0.5, dampingFraction: 0.75)) {
+            let notification = NotificationItem(isNew: false) // Spawn with final state
+            activeNotifications.append(notification)
         }
 
         // Auto-dismiss after exactly 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-            dismissNotification(notification)
+            if let notification = activeNotifications.first {
+                dismissNotification(notification)
+            }
 
             // Only schedule next in normal mode (spam mode handles its own scheduling)
             if !spamMode {
@@ -169,7 +166,11 @@ struct DiveView: View {
 struct NotificationItem: Identifiable {
     let id = UUID()
     let createdAt = Date()
-    var isNew: Bool = true // For grey-to-white animation
+    var isNew: Bool
+
+    init(isNew: Bool = true) {
+        self.isNew = isNew
+    }
 }
 
 // MARK: - Lock Screen Notification View
@@ -179,13 +180,13 @@ struct LockScreenNotification: View {
 
     var body: some View {
         Button(action: onTap) {
-            // Bubble effect: light blue tinge, semi-transparent, gradient
+            // Bubble: translucent blue gradient - single final state
             RoundedRectangle(cornerRadius: 16)
                 .fill(
                     LinearGradient(
                         gradient: Gradient(colors: [
-                            isNew ? Color.gray.opacity(0.75) : Color(red: 0.85, green: 0.95, blue: 1.0).opacity(0.9),
-                            isNew ? Color.gray.opacity(0.65) : Color(red: 0.75, green: 0.9, blue: 1.0).opacity(0.85)
+                            Color(red: 0.85, green: 0.95, blue: 1.0).opacity(0.9),
+                            Color(red: 0.75, green: 0.9, blue: 1.0).opacity(0.85)
                         ]),
                         startPoint: .top,
                         endPoint: .bottom
@@ -199,7 +200,6 @@ struct LockScreenNotification: View {
                 )
                 .shadow(color: Color.cyan.opacity(0.3), radius: 8)
                 .shadow(color: .black.opacity(0.2), radius: 15)
-                .animation(.easeInOut(duration: 0.3), value: isNew)
         }
     }
 }
