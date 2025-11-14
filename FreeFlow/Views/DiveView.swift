@@ -60,30 +60,41 @@ struct DiveView: View {
                 VStack {
                     // TOP HUD
                     HStack {
-                        // LEFT: Bubbles Remaining
-                        HStack(spacing: 4) {
+                        // LEFT: Bubbles Remaining (higher, bubble-styled)
+                        HStack(spacing: 6) {
                             ForEach(0..<bubblesRemaining, id: \.self) { _ in
                                 Circle()
-                                    .fill(Color.white)
-                                    .frame(width: 12, height: 12)
+                                    .fill(
+                                        RadialGradient(
+                                            gradient: Gradient(colors: [.white, .white.opacity(0.6)]),
+                                            center: .topLeading,
+                                            startRadius: 1,
+                                            endRadius: 10
+                                        )
+                                    )
+                                    .frame(width: 16, height: 16)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+                                    )
                             }
                             ForEach(0..<(5 - bubblesRemaining), id: \.self) { _ in
                                 Circle()
-                                    .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                                    .frame(width: 12, height: 12)
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                    .frame(width: 16, height: 16)
                             }
                         }
                         .padding(.leading, 20)
 
                         Spacer()
 
-                        // RIGHT: Depth Remaining
+                        // RIGHT: Depth Remaining (higher)
                         Text("\(depthRemaining)m")
                             .font(.system(size: 14, weight: .medium, design: .rounded))
                             .foregroundColor(.white.opacity(0.7))
                             .padding(.trailing, 20)
                     }
-                    .padding(.top, 10)
+                    .padding(.top, 60)
 
                     Spacer()
 
@@ -119,16 +130,15 @@ struct DiveView: View {
                     }
                 }
 
-                // NOTIFICATION BANNER (slides down from top)
+                // NOTIFICATION BANNER (slides down from top, positioned higher)
                 if showNotification {
                     VStack {
                         NotificationBanner(
-                            text: notificationText,
                             onTap: {
                                 handleNotificationTap()
                             }
                         )
-                        .padding(.top, 50)
+                        .padding(.top, 70)
 
                         Spacer()
                     }
@@ -150,13 +160,13 @@ struct DiveView: View {
     func startDiveSession() {
         sessionActive = true
 
-        // Main game timer (1 meter per second descent)
+        // Main game timer (1 meter per minute descent = 25 minutes total)
         gameTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { _ in
             if !isPaused && sessionActive {
                 timeInFlow += 1
 
-                // Descend 1 meter per second
-                if depthRemaining > 0 {
+                // Descend 1 meter per minute (every 60 seconds)
+                if timeInFlow.truncatingRemainder(dividingBy: 60) == 0 && depthRemaining > 0 {
                     depthRemaining -= 1
                 }
 
@@ -185,12 +195,11 @@ struct DiveView: View {
         // Light up screen
         screenLit = true
 
-        // Show banner
-        notificationText = generateFakeNotificationText()
+        // Show banner (no text needed)
         showNotification = true
 
-        // Auto-dismiss after 6 seconds
-        DispatchQueue.main.asyncAfter(deadline: .now() + 6.0) {
+        // Auto-dismiss after exactly 5 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
             dismissNotification()
 
             // Schedule next notification
@@ -255,30 +264,17 @@ struct DiveView: View {
 
 // MARK: - Notification Banner View
 struct NotificationBanner: View {
-    let text: String
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            HStack {
-                Image(systemName: "app.fill")
-                    .foregroundColor(.white)
-                    .frame(width: 30, height: 30)
-
-                Text(text)
-                    .font(.system(size: 14))
-                    .foregroundColor(.white)
-                    .lineLimit(2)
-
-                Spacer()
-            }
-            .padding()
-            .background(
-                RoundedRectangle(cornerRadius: 16)
-                    .fill(Color.gray.opacity(0.9))
-                    .shadow(color: .white.opacity(0.3), radius: 10)
-            )
-            .padding(.horizontal, 20)
+            // Empty banner - no text, no icons
+            Rectangle()
+                .fill(Color.gray.opacity(0.9))
+                .frame(height: 65)
+                .cornerRadius(16)
+                .shadow(color: .white.opacity(0.3), radius: 10)
+                .padding(.horizontal, 20)
         }
     }
 }
