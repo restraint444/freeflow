@@ -25,9 +25,9 @@ struct DiveView: View {
     @State private var isPaused: Bool = false
     @State private var sessionComplete: Bool = false
 
-    // HUNGARY MASCOT
-    @State private var hungaryMessage: String = "Welcome! I'm Hungary the Walrus. Let's find some clams!"
-    @State private var showHungary: Bool = true
+    // HUNGARY MASCOT (disabled for now)
+    // @State private var hungaryMessage: String = ""
+    // @State private var showHungary: Bool = false
 
     // TIMERS
     @State private var gameTimer: Timer? = nil
@@ -84,23 +84,6 @@ struct DiveView: View {
                             .padding(.trailing, 20)
                     }
                     .padding(.top, 10)
-
-                    Spacer()
-
-                    // HUNGARY MASCOT MESSAGE (tutorial)
-                    if showHungary {
-                        Text(hungaryMessage)
-                            .font(.system(size: 16, weight: .medium))
-                            .foregroundColor(.white.opacity(0.8))
-                            .multilineTextAlignment(.center)
-                            .padding(.horizontal, 40)
-                            .padding(.vertical, 20)
-                            .background(
-                                RoundedRectangle(cornerRadius: 16)
-                                    .fill(Color.white.opacity(0.05))
-                            )
-                            .padding(.horizontal, 30)
-                    }
 
                     Spacer()
 
@@ -234,12 +217,7 @@ struct DiveView: View {
 
         // Check if game over (all bubbles used)
         if bubblesRemaining == 0 {
-            hungaryMessage = "Out of bubbles! Returning to surface..."
-            showHungary = true
-
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
-                completeSession()
-            }
+            completeSession()
         }
 
         dismissNotification()
