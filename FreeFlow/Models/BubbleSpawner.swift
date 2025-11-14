@@ -9,6 +9,7 @@
 
 import Foundation
 import Combine
+import UIKit
 
 class BubbleSpawner: ObservableObject {
     @Published var activeBubbles: [Bubble] = []
