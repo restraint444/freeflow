@@ -177,13 +177,26 @@ struct LockScreenNotification: View {
 
     var body: some View {
         Button(action: onTap) {
-            // iOS lock screen animation: grey → white, slightly transparent
-            Rectangle()
-                .fill(isNew ? Color.gray.opacity(0.8) : Color.white.opacity(0.95))
+            // Bubble effect: light blue tinge, semi-transparent, gradient
+            RoundedRectangle(cornerRadius: 16)
+                .fill(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            isNew ? Color.gray.opacity(0.75) : Color(red: 0.85, green: 0.95, blue: 1.0).opacity(0.9),
+                            isNew ? Color.gray.opacity(0.65) : Color(red: 0.75, green: 0.9, blue: 1.0).opacity(0.85)
+                        ]),
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
                 .frame(height: 80)
                 .frame(maxWidth: 360)
-                .cornerRadius(16)
-                .shadow(color: .black.opacity(0.3), radius: 10)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
+                .shadow(color: Color.cyan.opacity(0.3), radius: 8)
+                .shadow(color: .black.opacity(0.2), radius: 15)
                 .animation(.easeInOut(duration: 0.3), value: isNew)
         }
     }
