@@ -60,7 +60,7 @@ struct DiveView: View {
                 VStack {
                     // TOP HUD
                     HStack {
-                        // LEFT: Bubbles Remaining (higher, bubble-styled)
+                        // LEFT: Bubbles Remaining (as high as possible)
                         HStack(spacing: 6) {
                             ForEach(0..<bubblesRemaining, id: \.self) { _ in
                                 Circle()
@@ -88,13 +88,13 @@ struct DiveView: View {
 
                         Spacer()
 
-                        // RIGHT: Depth Remaining (higher)
+                        // RIGHT: Depth Remaining (as high as possible)
                         Text("\(depthRemaining)m")
                             .font(.system(size: 14, weight: .medium, design: .rounded))
                             .foregroundColor(.white.opacity(0.7))
                             .padding(.trailing, 20)
                     }
-                    .padding(.top, 60)
+                    .padding(.top, 10)
 
                     Spacer()
 
