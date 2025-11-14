@@ -44,6 +44,7 @@ struct DiveView: View {
 
                     Spacer()
                 }
+                .ignoresSafeArea()
                 .transition(.move(edge: .top))
                 .animation(.spring(response: 0.5, dampingFraction: 0.8, blendDuration: 0), value: showNotification)
             }
@@ -108,14 +109,14 @@ struct NotificationBanner: View {
 
     var body: some View {
         Button(action: onTap) {
-            // Empty banner - pure white, slides from top like real iOS
+            // Empty banner - pure white, positioned right below status bar
             Rectangle()
                 .fill(Color.white)
                 .frame(height: 90)
                 .cornerRadius(20)
                 .shadow(color: .black.opacity(0.3), radius: 15)
                 .padding(.horizontal, 8)
-                .padding(.top, 50)
+                .padding(.top, 54)
         }
     }
 }
