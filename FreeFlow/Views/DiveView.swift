@@ -50,7 +50,7 @@ struct DiveView: View {
                         .scaleEffect(1.0 - (CGFloat(index) * 0.05)) // Slight scale for depth
                         .offset(y: CGFloat(index * 8)) // Minimal offset for stacking
                         .zIndex(Double(activeNotifications.count - index)) // Newest has highest z-index (on top)
-                        .transition(.scale.combined(with: .opacity))
+                        .transition(.scale(scale: 0.8).combined(with: .opacity))
                     }
                 }
                 .padding(.bottom, 120) // Above flashlight/camera area
@@ -133,7 +133,7 @@ struct DiveView: View {
         var notification = NotificationItem()
         activeNotifications.append(notification)
 
-        // Animate grey to white after 0.3 seconds
+        // Animate grey to blue after 0.3 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             if let index = activeNotifications.firstIndex(where: { $0.id == notification.id }) {
                 activeNotifications[index].isNew = false
@@ -144,8 +144,10 @@ struct DiveView: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
             dismissNotification(notification)
 
-            // Schedule next notification
-            scheduleNextNotification()
+            // Only schedule next in normal mode (spam mode handles its own scheduling)
+            if !spamMode {
+                scheduleNextNotification()
+            }
         }
     }
 
