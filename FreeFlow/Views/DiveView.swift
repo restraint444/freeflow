@@ -34,20 +34,23 @@ struct DiveView: View {
                     .animation(.easeInOut(duration: 0.3), value: screenLit)
             }
 
-            // LOCK SCREEN NOTIFICATIONS - Bottom area, stacked
+            // LOCK SCREEN NOTIFICATIONS - Stacked exactly like iOS
             VStack {
                 Spacer()
 
-                // Stack notifications from bottom up
-                ForEach(Array(activeNotifications.enumerated()), id: \.element.id) { index, notification in
-                    LockScreenNotification(
-                        onTap: {
-                            dismissNotification(notification)
-                        }
-                    )
-                    .offset(y: CGFloat(-index * 10)) // Stack offset
-                    .zIndex(Double(activeNotifications.count - index))
-                    .transition(.scale.combined(with: .opacity))
+                ZStack {
+                    // Stack all notifications at same position, layer with z-index + scale
+                    ForEach(Array(activeNotifications.enumerated().reversed()), id: \.element.id) { index, notification in
+                        LockScreenNotification(
+                            onTap: {
+                                dismissNotification(notification)
+                            }
+                        )
+                        .scaleEffect(1.0 - (CGFloat(index) * 0.05)) // Slight scale for depth
+                        .offset(y: CGFloat(index * 8)) // Minimal offset for stacking
+                        .zIndex(Double(activeNotifications.count - index)) // Newer on top
+                        .transition(.scale.combined(with: .opacity))
+                    }
                 }
                 .padding(.bottom, 120) // Above flashlight/camera area
             }
