@@ -39,16 +39,17 @@ struct DiveView: View {
                 Spacer()
 
                 ZStack {
-                    // Stack all notifications at same position, layer with z-index + scale
+                    // Stack all notifications - newest appears on top (in front)
                     ForEach(Array(activeNotifications.enumerated().reversed()), id: \.element.id) { index, notification in
                         LockScreenNotification(
+                            isNew: notification.isNew,
                             onTap: {
                                 dismissNotification(notification)
                             }
                         )
                         .scaleEffect(1.0 - (CGFloat(index) * 0.05)) // Slight scale for depth
                         .offset(y: CGFloat(index * 8)) // Minimal offset for stacking
-                        .zIndex(Double(activeNotifications.count - index)) // Newer on top
+                        .zIndex(Double(activeNotifications.count - index)) // Newest has highest z-index (on top)
                         .transition(.scale.combined(with: .opacity))
                     }
                 }
@@ -128,9 +129,16 @@ struct DiveView: View {
         // Light up screen
         screenLit = true
 
-        // Add notification to stack
-        let notification = NotificationItem()
+        // Add notification to stack (starts grey)
+        var notification = NotificationItem()
         activeNotifications.append(notification)
+
+        // Animate grey to white after 0.3 seconds
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+            if let index = activeNotifications.firstIndex(where: { $0.id == notification.id }) {
+                activeNotifications[index].isNew = false
+            }
+        }
 
         // Auto-dismiss after exactly 5 seconds
         DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
@@ -159,21 +167,24 @@ struct DiveView: View {
 struct NotificationItem: Identifiable {
     let id = UUID()
     let createdAt = Date()
+    var isNew: Bool = true // For grey-to-white animation
 }
 
 // MARK: - Lock Screen Notification View
 struct LockScreenNotification: View {
+    let isNew: Bool
     let onTap: () -> Void
 
     var body: some View {
         Button(action: onTap) {
-            // Lock screen notification style - pure white rounded rect
+            // iOS lock screen animation: grey → white, slightly transparent
             Rectangle()
-                .fill(Color.white)
+                .fill(isNew ? Color.gray.opacity(0.8) : Color.white.opacity(0.95))
                 .frame(height: 80)
                 .frame(maxWidth: 360)
                 .cornerRadius(16)
                 .shadow(color: .black.opacity(0.3), radius: 10)
+                .animation(.easeInOut(duration: 0.3), value: isNew)
         }
     }
 }
