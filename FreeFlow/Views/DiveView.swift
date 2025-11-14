@@ -58,44 +58,6 @@ struct DiveView: View {
             } else {
                 // ACTIVE DIVE SESSION
                 VStack {
-                    // TOP HUD
-                    HStack {
-                        // LEFT: Bubbles Remaining (as high as possible)
-                        HStack(spacing: 6) {
-                            ForEach(0..<bubblesRemaining, id: \.self) { _ in
-                                Circle()
-                                    .fill(
-                                        RadialGradient(
-                                            gradient: Gradient(colors: [.white, .white.opacity(0.6)]),
-                                            center: .topLeading,
-                                            startRadius: 1,
-                                            endRadius: 10
-                                        )
-                                    )
-                                    .frame(width: 16, height: 16)
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
-                                    )
-                            }
-                            ForEach(0..<(5 - bubblesRemaining), id: \.self) { _ in
-                                Circle()
-                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                    .frame(width: 16, height: 16)
-                            }
-                        }
-                        .padding(.leading, 20)
-
-                        Spacer()
-
-                        // RIGHT: Depth Remaining (as high as possible)
-                        Text("\(depthRemaining)m")
-                            .font(.system(size: 14, weight: .medium, design: .rounded))
-                            .foregroundColor(.white.opacity(0.7))
-                            .padding(.trailing, 20)
-                    }
-                    .padding(.top, 10)
-
                     Spacer()
 
                     // PAUSE BUTTON (camera icon aesthetic)
@@ -130,18 +92,61 @@ struct DiveView: View {
                     }
                 }
 
-                // NOTIFICATION BANNER (slides down from top, positioned higher)
+                // TOP HUD - IN STATUS BAR AREA (overlaps time/battery)
+                VStack {
+                    HStack {
+                        // LEFT: Bubbles Remaining (in status bar)
+                        HStack(spacing: 6) {
+                            ForEach(0..<bubblesRemaining, id: \.self) { _ in
+                                Circle()
+                                    .fill(
+                                        RadialGradient(
+                                            gradient: Gradient(colors: [.white, .white.opacity(0.6)]),
+                                            center: .topLeading,
+                                            startRadius: 1,
+                                            endRadius: 10
+                                        )
+                                    )
+                                    .frame(width: 16, height: 16)
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.white.opacity(0.4), lineWidth: 0.5)
+                                    )
+                            }
+                            ForEach(0..<(5 - bubblesRemaining), id: \.self) { _ in
+                                Circle()
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                    .frame(width: 16, height: 16)
+                            }
+                        }
+                        .padding(.leading, 20)
+
+                        Spacer()
+
+                        // RIGHT: Depth Remaining (in status bar)
+                        Text("\(depthRemaining)m")
+                            .font(.system(size: 14, weight: .medium, design: .rounded))
+                            .foregroundColor(.white.opacity(0.7))
+                            .padding(.trailing, 20)
+                    }
+                    .padding(.top, 8)
+
+                    Spacer()
+                }
+                .ignoresSafeArea()
+
+                // NOTIFICATION BANNER (slides from absolute top - like real iOS banner)
                 if showNotification {
-                    VStack {
+                    VStack(spacing: 0) {
                         NotificationBanner(
                             onTap: {
                                 handleNotificationTap()
                             }
                         )
-                        .padding(.top, 70)
 
                         Spacer()
                     }
+                    .ignoresSafeArea()
                     .transition(.move(edge: .top))
                     .animation(.easeOut(duration: 0.3), value: showNotification)
                 }
@@ -268,13 +273,16 @@ struct NotificationBanner: View {
 
     var body: some View {
         Button(action: onTap) {
-            // Empty banner - no text, no icons
-            Rectangle()
-                .fill(Color.gray.opacity(0.9))
-                .frame(height: 65)
-                .cornerRadius(16)
-                .shadow(color: .white.opacity(0.3), radius: 10)
-                .padding(.horizontal, 20)
+            // Empty banner - sized like real iOS notification, no text/icons
+            VStack(spacing: 0) {
+                Rectangle()
+                    .fill(Color.gray.opacity(0.95))
+                    .frame(height: 90)
+            }
+            .cornerRadius(20)
+            .shadow(color: .black.opacity(0.3), radius: 15)
+            .padding(.horizontal, 8)
+            .padding(.top, 8)
         }
     }
 }
