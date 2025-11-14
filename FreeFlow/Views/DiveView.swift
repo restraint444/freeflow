@@ -41,7 +41,7 @@ struct DiveView: View {
                             handleNotificationTap()
                         }
                     )
-                    .padding(.top, 50)
+                    .padding(.top, 5)
 
                     Spacer()
                 }
