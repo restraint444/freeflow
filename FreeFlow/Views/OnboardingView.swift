@@ -10,6 +10,7 @@ import SwiftUI
 
 struct OnboardingView: View {
     let onStartDive: () -> Void
+    let onStartSpam: () -> Void
 
     var body: some View {
         ZStack {
@@ -46,14 +47,26 @@ struct OnboardingView: View {
 
                 Spacer()
 
-                Button(action: onStartDive) {
-                    Text("Start Dive")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.black)
-                        .frame(maxWidth: .infinity)
-                        .frame(height: 56)
-                        .background(Color.cyan)
-                        .cornerRadius(16)
+                VStack(spacing: 16) {
+                    Button(action: onStartDive) {
+                        Text("Start Dive")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color.cyan)
+                            .cornerRadius(16)
+                    }
+
+                    Button(action: onStartSpam) {
+                        Text("Spam")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.black)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 56)
+                            .background(Color.orange)
+                            .cornerRadius(16)
+                    }
                 }
                 .padding(.horizontal, 40)
                 .padding(.bottom, 60)

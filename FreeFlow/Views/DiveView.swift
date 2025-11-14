@@ -14,9 +14,11 @@ struct DiveView: View {
 
     // SESSION STATE
     @State private var sessionActive: Bool = true
+    let spamMode: Bool // Testing mode: 5 notifications/sec
 
     // TIMER
     @State private var notificationTimer: Timer? = nil
+    @State private var spamBurstCount: Int = 0
 
     var body: some View {
         ZStack {
@@ -50,6 +52,28 @@ struct DiveView: View {
                 .padding(.bottom, 120) // Above flashlight/camera area
             }
             .animation(.spring(response: 0.4, dampingFraction: 0.75), value: activeNotifications.count)
+
+            // FLASHLIGHT & CAMERA BUTTON PLACEHOLDERS (bottom corners)
+            VStack {
+                Spacer()
+
+                HStack {
+                    // Flashlight (left)
+                    Image(systemName: "flashlight.off.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(.white.opacity(0.5))
+                        .padding(.leading, 40)
+
+                    Spacer()
+
+                    // Camera (right)
+                    Image(systemName: "camera.fill")
+                        .font(.system(size: 28))
+                        .foregroundColor(.white.opacity(0.5))
+                        .padding(.trailing, 40)
+                }
+                .padding(.bottom, 40)
+            }
         }
         .onAppear {
             startNotificationDemo()
@@ -67,10 +91,32 @@ struct DiveView: View {
     }
 
     func scheduleNextNotification() {
-        // Fixed 3 second interval for testing
-        notificationTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
-            if sessionActive {
-                spawnNotification()
+        if spamMode {
+            // SPAM MODE: 5 notifications in 1 second, then 7 second delay
+            if spamBurstCount < 5 {
+                // Burst: 0.2 second intervals (5 in 1 second)
+                notificationTimer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: false) { _ in
+                    if sessionActive {
+                        spawnNotification()
+                        spamBurstCount += 1
+                        scheduleNextNotification()
+                    }
+                }
+            } else {
+                // Delay: 7 seconds before next burst
+                notificationTimer = Timer.scheduledTimer(withTimeInterval: 7.0, repeats: false) { _ in
+                    if sessionActive {
+                        spamBurstCount = 0
+                        scheduleNextNotification()
+                    }
+                }
+            }
+        } else {
+            // NORMAL MODE: 3 second interval
+            notificationTimer = Timer.scheduledTimer(withTimeInterval: 3.0, repeats: false) { _ in
+                if sessionActive {
+                    spawnNotification()
+                }
             }
         }
     }
